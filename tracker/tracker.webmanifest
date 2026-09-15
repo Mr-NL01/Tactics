@@ -7,6 +7,6 @@
   "background_color": "#101613",
   "theme_color": "#101613",
   "icons": [
-    { "src": "tracker-logo.jpeg", "sizes": "1024x1024", "type": "image/jpeg", "purpose": "any" }
+    { "src": "tournament-logo.jpeg", "sizes": "1024x1024", "type": "image/jpeg", "purpose": "any" }
   ]
 }
