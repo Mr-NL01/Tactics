@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tactics Darts Tracker</title>
+<title>Tactics Darts Tournament</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Tracker">
+<meta name="apple-mobile-web-app-title" content="Tournament">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#ECEFEA" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#101613" media="(prefers-color-scheme: dark)">
-<link rel="manifest" href="tracker.webmanifest">
+<link rel="manifest" href="tournament.webmanifest">
 <link rel="apple-touch-icon" href="tournament-logo.jpeg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -188,7 +188,7 @@ tr.cut td{padding:6px 0;border-bottom:0}
   <header class="top">
     <div>
       <p class="kicker">Set up a tournament</p>
-      <h1>Tactics Darts Tracker</h1>
+      <h1>Tactics Darts Tournament</h1>
     </div>
   </header>
   <section class="panel setup" id="setup"></section>
@@ -201,7 +201,7 @@ tr.cut td{padding:6px 0;border-bottom:0}
   <header class="top">
     <div>
       <p class="kicker" id="kicker"></p>
-      <h1>Tactics Darts Tracker</h1>
+      <h1>Tactics Darts Tournament</h1>
     </div>
     <div class="prog-col">
       <button class="ghost small" id="setupbtn" data-act="setup" data-k="setupbtn">Setup</button>
@@ -226,7 +226,7 @@ tr.cut td{padding:6px 0;border-bottom:0}
 
 <script>
 const MINP = 4, MAXP = 20, MAXR = 40;
-const KEY = "tactics-tracker-v1";
+const KEY = "tactics-tournament-v1";
 const blank = () => ({winner:null,goals:{a:null,b:null}});
 const fresh = () => ({setup:{names:Array(8).fill(""),boards:1,rounds:8,edited:false},tour:null,results:{},final:{lineup:null,...blank()},order:[]});
 let S = load();
@@ -659,7 +659,7 @@ renderAll();
 
 
 <script>
-/* keep the screen awake while the tracker is open */
+/* keep the screen awake while the tournament is open */
 let __lock = null;
 async function __keepAwake() {
   try { if ('wakeLock' in navigator) __lock = await navigator.wakeLock.request('screen'); } catch (e) {}

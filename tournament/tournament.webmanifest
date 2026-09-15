@@ -1,6 +1,6 @@
 {
-  "name": "Tactics Darts Tracker",
-  "short_name": "Tracker",
+  "name": "Tactics Darts Tournament",
+  "short_name": "Tournament",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
