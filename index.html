@@ -22,12 +22,23 @@
     padding: calc(24px + env(safe-area-inset-top)) 18px calc(24px + env(safe-area-inset-bottom));
   }
   .wrap { width: 100%; max-width: 420px; }
+  .logo {
+    display: block;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 18px;
+    border-radius: 20px;
+    border: 3px solid #9DA4AB;
+    box-shadow: 0 18px 44px rgba(0,0,0,.55);
+    object-fit: cover;
+  }
   h1 {
     font-family: "Archivo Black", Archivo, system-ui, sans-serif;
     font-size: 15px;
     letter-spacing: .14em;
     color: #5C636D;
     margin: 0 0 18px 2px;
+    text-align: center;
   }
   a.card {
     display: flex;
@@ -53,6 +64,7 @@
 </style>
 
 <div class="wrap">
+  <img class="logo" src="logo.jpg" alt="Tactics logo">
   <h1>TACTICS</h1>
 
   <a class="card" href="board/">
