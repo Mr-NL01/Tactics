@@ -1,0 +1,518 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Tactics scoreboard</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tactics">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0B0D11">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=Archivo+Black&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --row-h: 46px;
+    --num-w: 62px;
+    --pts-w: 44px;
+  }
+
+  [data-theme="white"] {
+    --page: #E6E7E3;
+    --board: #FAFAF7;
+    --frame: transparent;
+    --frame-w: 0px;
+    --shadow: none;
+    --line: #14161A;
+    --line-soft: #C3C5C2;
+    --print: #14161A;
+    --numbox: #FFFFFF;
+    --ink-a: #17181E;
+    --ink-b: #1E3FB0;
+    --chrome: #4A4D52;
+    --chrome-dim: #8A8E92;
+    --btn: rgba(20,22,26,.07);
+    --btn-line: rgba(20,22,26,.18);
+  }
+  [data-theme="slab"] {
+    --page: #0B0D11;
+    --board: #FAFAF7;
+    --frame: #9DA4AB;
+    --frame-w: 9px;
+    --shadow: 0 18px 44px rgba(0,0,0,.6);
+    --line: #14161A;
+    --line-soft: #C3C5C2;
+    --print: #14161A;
+    --numbox: #FFFFFF;
+    --ink-a: #17181E;
+    --ink-b: #1E3FB0;
+    --chrome: #9AA1AA;
+    --chrome-dim: #5C636D;
+    --btn: rgba(255,255,255,.06);
+    --btn-line: rgba(255,255,255,.16);
+  }
+  [data-theme="dark"] {
+    --page: #0B0D11;
+    --board: #171A20;
+    --frame: #2A2F39;
+    --frame-w: 9px;
+    --shadow: 0 18px 44px rgba(0,0,0,.6);
+    --line: #EAE7DE;
+    --line-soft: #3A404B;
+    --print: #EAE7DE;
+    --numbox: #1F232B;
+    --ink-a: #F4F2EA;
+    --ink-b: #F0B23C;
+    --chrome: #9AA1AA;
+    --chrome-dim: #5C636D;
+    --btn: rgba(255,255,255,.06);
+    --btn-line: rgba(255,255,255,.16);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; }
+  body {
+    background: var(--page);
+    font-family: Archivo, system-ui, sans-serif;
+    color: var(--chrome);
+    padding: calc(10px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right))
+             calc(18px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left));
+    min-height: 100vh;
+    transition: background .25s;
+  }
+  .wrap { max-width: 460px; margin: 0 auto; }
+
+  .board {
+    background: var(--board);
+    border: var(--frame-w) solid var(--frame);
+    border-radius: calc(var(--frame-w) + 3px);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: background .25s, border-color .25s;
+  }
+
+  /* header printed on the board */
+  .head {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: start;
+    gap: 8px;
+    padding: 10px 10px 12px;
+    border-bottom: 2.5px solid var(--line);
+  }
+  .side { min-width: 0; }
+  .side.away { text-align: right; }
+  .tag {
+    font-family: "Archivo Black", Archivo, system-ui, sans-serif;
+    font-size: 11px;
+    letter-spacing: .1em;
+    color: var(--print);
+    opacity: .75;
+  }
+  .name {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    font-family: Archivo, system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--print);
+    padding: 2px 0;
+    border-bottom: 1.5px dashed var(--line-soft);
+  }
+  .name:focus { outline: none; border-bottom-color: var(--line); }
+  .side.away .name { text-align: right; }
+  .totals { display: flex; align-items: baseline; gap: 6px; margin-top: 6px; }
+  .side.away .totals { justify-content: flex-end; }
+  .goals {
+    font-family: "Archivo Black", Archivo, system-ui, sans-serif;
+    font-size: 30px;
+    line-height: .9;
+  }
+  .pts-total { font-size: 13px; font-weight: 700; opacity: .8; }
+  .home .goals, .home .pts-total { color: var(--ink-a); }
+  .away .goals, .away .pts-total { color: var(--ink-b); }
+  .legend {
+    align-self: center;
+    text-align: center;
+    font-size: 10px;
+    line-height: 1.35;
+    color: var(--print);
+    opacity: .5;
+    max-width: 74px;
+  }
+
+  /* rows */
+  .row {
+    display: grid;
+    grid-template-columns: var(--pts-w) 1fr var(--num-w) 1fr var(--pts-w);
+    height: var(--row-h);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .row:last-child { border-bottom: 0; }
+  .row.done .num b { opacity: .28; text-decoration: line-through; }
+
+  .cell {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: inherit;
+    font-family: inherit;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .cell:focus-visible { outline: 2px solid var(--ink-b); outline-offset: -3px; }
+
+  .marks {
+    position: relative;
+    overflow: hidden;
+    border-left: 1px solid var(--line-soft);
+    border-right: 1px solid var(--line-soft);
+  }
+  .marks svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  .num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--numbox);
+    border-left: 2.5px solid var(--line);
+    border-right: 2.5px solid var(--line);
+  }
+  .num b {
+    font-family: "Archivo Black", Archivo, system-ui, sans-serif;
+    font-size: 22px;
+    line-height: 1;
+    display: block;
+    color: var(--print);
+    transition: opacity .2s;
+  }
+  .num.bull b { font-size: 13px; letter-spacing: .04em; }
+
+  .pts {
+    font-weight: 700;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+  }
+  .pts.home { color: var(--ink-a); }
+  .pts.away { color: var(--ink-b); }
+  .pts.idle { color: var(--line-soft); font-size: 13px; font-weight: 500; }
+  .pts.locked { cursor: default; }
+
+  /* chrome below the board */
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .seg {
+    display: flex;
+    border: 1px solid var(--btn-line);
+    border-radius: 9px;
+    overflow: hidden;
+    flex: 1;
+  }
+  .seg button {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    color: var(--chrome-dim);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 9px 4px;
+    cursor: pointer;
+  }
+  .seg button[aria-pressed="true"] { background: var(--btn); color: var(--chrome); }
+  .wipe {
+    border: 1px solid var(--btn-line);
+    background: transparent;
+    color: var(--chrome-dim);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 9px 12px;
+    border-radius: 9px;
+    cursor: pointer;
+  }
+  .wipe.armed { color: #E0453C; border-color: #E0453C; }
+  .hint { margin: 10px 2px 0; font-size: 11.5px; line-height: 1.5; color: var(--chrome-dim); }
+
+  .ink { fill: none; stroke-linecap: round; stroke-linejoin: round; opacity: .86; }
+  .ink.draw { animation: write .16s ease-out backwards; }
+  @keyframes write { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  @media (prefers-reduced-motion: reduce) { .ink.draw { animation: none; } }
+</style>
+
+<div class="wrap">
+  <div class="board">
+    <div class="head">
+      <div class="side home">
+        <div class="tag">HOME</div>
+        <input class="name" id="n0" maxlength="26" aria-label="Home team">
+        <div class="totals"><span class="goals" id="g0">0</span><span class="pts-total" id="p0">0 pts</span></div>
+      </div>
+      <div class="legend">3 marks to close<br>then tap the outer column to score</div>
+      <div class="side away">
+        <div class="tag">AWAY</div>
+        <input class="name" id="n1" maxlength="26" aria-label="Away team">
+        <div class="totals"><span class="pts-total" id="p1">0 pts</span><span class="goals" id="g1">0</span></div>
+      </div>
+    </div>
+    <div id="rows"></div>
+  </div>
+
+  <div class="bar">
+    <div class="seg" role="group" aria-label="Board surface">
+      <button data-theme-btn="slab">Slab</button>
+      <button data-theme-btn="white">Whiteboard</button>
+      <button data-theme-btn="dark">Dark board</button>
+    </div>
+    <button class="wipe" id="wipe">Wipe board</button>
+  </div>
+  <p class="hint">Tap a marks cell to add a mark. A fourth tap clears the number. Points open up once you have closed a number and the other team has not.</p>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="rough" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.3" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<script>
+const NUMS = [20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 'BULL'];
+const VALUE = n => (n === 'BULL' ? 25 : n);
+const KEY = 'tactics:board:v2';
+
+let state = {
+  theme: 'slab',
+  names: ['Home', 'Away'],
+  marks: {},
+  pts: {}
+};
+NUMS.forEach(n => { state.marks[n] = [0, 0]; state.pts[n] = [0, 0]; });
+
+let fresh = null; // {n, team, i} -> animate only the newest stroke
+
+/* deterministic jitter so marks never twitch on re-render */
+function noise(seed) {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) { h ^= seed.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return ((h >>> 0) % 1000) / 1000 - 0.5;
+}
+const j = (seed, amt) => noise(seed) * amt;
+
+/* three crosses per number, sitting side by side.
+   Slot 2 is the inner edge of the column, so the first cross lands next to
+   the numerals and the marks grow outwards as the number fills up.
+   Every cross gets its own size, tilt, arm lengths, crossing point, ink
+   weight and pressure, all seeded per cell so it redraws identically. */
+const SLOT_X = [23, 58, 93];
+const CY = 23, ARM = 12;
+const r = k => noise(k) + 0.5;
+
+function crossPaths(key, cx, cy, color, isNew) {
+  const size = 0.86 + r(key + 'z') * 0.3;
+  const tilt = (r(key + 't') - 0.5) * 0.4;
+  const cos = Math.cos(tilt), sin = Math.sin(tilt);
+  let out = '';
+  [1, -1].forEach((dir, k) => {
+    const s = key + 'k' + k;
+    const a1 = ARM * (0.8 + r(s + '1') * 0.38), a2 = ARM * (0.8 + r(s + '2') * 0.38);
+    const h1 = ARM * (0.76 + r(s + '3') * 0.44), h2 = ARM * (0.76 + r(s + '4') * 0.44);
+    const ox = (r(s + '5') - 0.5) * 4, oy = (r(s + '6') - 0.5) * 4;
+    const p = (px, py) => [
+      cx + (px * cos - py * sin) * size + ox,
+      cy + (px * sin + py * cos) * size + oy
+    ];
+    const [x1, y1] = p(-a1, dir * h1);
+    const [x2, y2] = p(a2, -dir * h2);
+    const bow = (r(s + '7') - 0.5) * 7;
+    const mx = (x1 + x2) / 2 + bow * 0.4, my = (y1 + y2) / 2 + bow;
+    const w = (3.7 + r(s + '8') * 1.5).toFixed(2);
+    const op = (0.74 + r(s + '9') * 0.2).toFixed(2);
+    const d = `M ${x1.toFixed(1)} ${y1.toFixed(1)} Q ${mx.toFixed(1)} ${my.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+    out += `<path class="ink${isNew ? ' draw' : ''}" d="${d}" stroke="${color}" stroke-width="${w}"
+      pathLength="1" stroke-dasharray="1" style="opacity:${op};animation-delay:${isNew ? k * 70 : 0}ms"/>`;
+  });
+  return out;
+}
+
+function marksSvg(n, team) {
+  const count = state.marks[n][team];
+  const align = team === 0 ? 'xMaxYMid' : 'xMinYMid';
+  if (!count) return `<svg viewBox="0 0 116 46" preserveAspectRatio="${align} meet"></svg>`;
+  const color = team === 0 ? 'var(--ink-a)' : 'var(--ink-b)';
+  let paths = '';
+  for (let i = 0; i < count; i++) {
+    const slot = team === 0 ? 2 - i : i;
+    const key = `${n}-${team}-${i}`;
+    const isNew = fresh && fresh.n == n && fresh.team === team && fresh.i === i;
+    paths += crossPaths(key, SLOT_X[slot] + j(key + 'p', 5), CY + j(key + 'q', 4), color, isNew);
+  }
+  return `<svg viewBox="0 0 116 46" preserveAspectRatio="${align} meet"><g filter="url(#rough)">${paths}</g></svg>`;
+}
+
+function canScore(n, team) {
+  return state.marks[n][team] === 3 && state.marks[n][1 - team] < 3;
+}
+
+function render() {
+  const rows = document.getElementById('rows');
+  rows.innerHTML = NUMS.map(n => {
+    const both = state.marks[n][0] === 3 && state.marks[n][1] === 3;
+    const ptsCell = team => {
+      const v = state.pts[n][team];
+      const open = canScore(n, team);
+      const cls = v ? (team === 0 ? 'home' : 'away') : open ? 'idle' : 'idle locked';
+      const label = v ? v : open ? '+' : '';
+      return `<button class="cell pts ${cls}" data-pts="${n}" data-team="${team}"
+        aria-label="${team === 0 ? 'Home' : 'Away'} points on ${n}: ${v}">${label}</button>`;
+    };
+    const markCell = team => `<button class="cell marks" data-mark="${n}" data-team="${team}"
+        aria-label="${team === 0 ? 'Home' : 'Away'} marks on ${n}: ${state.marks[n][team]} of 3">${marksSvg(n, team)}</button>`;
+    return `<div class="row${both ? ' done' : ''}">
+      ${ptsCell(0)}${markCell(0)}
+      <div class="num${n === 'BULL' ? ' bull' : ''}"><b>${n}</b></div>
+      ${markCell(1)}${ptsCell(1)}
+    </div>`;
+  }).join('');
+
+  [0, 1].forEach(t => {
+    const goals = NUMS.filter(n => state.marks[n][t] === 3).length;
+    const pts = NUMS.reduce((s, n) => s + state.pts[n][t], 0);
+    document.getElementById('g' + t).textContent = goals;
+    document.getElementById('p' + t).textContent = pts + ' pts';
+  });
+
+  fresh = null;
+  save();
+}
+
+/* input */
+document.getElementById('rows').addEventListener('click', e => {
+  const mark = e.target.closest('[data-mark]');
+  if (mark) {
+    const n = mark.dataset.mark, t = +mark.dataset.team;
+    const next = (state.marks[n][t] + 1) % 4;
+    state.marks[n][t] = next;
+    if (next) fresh = { n, team: t, i: next - 1 };
+    if (navigator.vibrate) navigator.vibrate(next ? 8 : 18);
+    return render();
+  }
+  const pts = e.target.closest('[data-pts]');
+  if (pts && !pressHeld) {
+    const n = pts.dataset.pts, t = +pts.dataset.team;
+    if (!canScore(n, t)) return;
+    state.pts[n][t] += VALUE(n === 'BULL' ? 'BULL' : +n);
+    if (navigator.vibrate) navigator.vibrate(8);
+    render();
+  }
+  pressHeld = false;
+});
+
+/* long press on a points cell subtracts one hit */
+let timer = null, pressHeld = false;
+const start = e => {
+  const pts = e.target.closest('[data-pts]');
+  if (!pts) return;
+  timer = setTimeout(() => {
+    const n = pts.dataset.pts, t = +pts.dataset.team;
+    const v = VALUE(n === 'BULL' ? 'BULL' : +n);
+    state.pts[n][t] = Math.max(0, state.pts[n][t] - v);
+    pressHeld = true;
+    if (navigator.vibrate) navigator.vibrate(18);
+    render();
+  }, 450);
+};
+const stop = () => { clearTimeout(timer); };
+document.getElementById('rows').addEventListener('pointerdown', start);
+['pointerup', 'pointerleave', 'pointercancel'].forEach(ev =>
+  document.getElementById('rows').addEventListener(ev, stop));
+
+/* names */
+[0, 1].forEach(t => {
+  const el = document.getElementById('n' + t);
+  el.value = state.names[t];
+  el.addEventListener('input', () => { state.names[t] = el.value; save(); });
+});
+
+/* theme */
+function setTheme(name) {
+  state.theme = name;
+  document.documentElement.dataset.theme = name;
+  document.querySelectorAll('[data-theme-btn]').forEach(b =>
+    b.setAttribute('aria-pressed', b.dataset.themeBtn === name));
+  save();
+}
+document.querySelectorAll('[data-theme-btn]').forEach(b =>
+  b.addEventListener('click', () => setTheme(b.dataset.themeBtn)));
+
+/* wipe */
+const wipe = document.getElementById('wipe');
+let armed = false, armTimer = null;
+wipe.addEventListener('click', () => {
+  if (!armed) {
+    armed = true;
+    wipe.classList.add('armed');
+    wipe.textContent = 'Tap to confirm';
+    armTimer = setTimeout(() => { armed = false; wipe.classList.remove('armed'); wipe.textContent = 'Wipe board'; }, 3000);
+    return;
+  }
+  clearTimeout(armTimer);
+  armed = false;
+  wipe.classList.remove('armed');
+  wipe.textContent = 'Wipe board';
+  NUMS.forEach(n => { state.marks[n] = [0, 0]; state.pts[n] = [0, 0]; });
+  render();
+});
+
+/* persistence: Claude artifact storage when it exists, localStorage otherwise */
+const store = {
+  async set(v) {
+    try { if (window.storage) return await window.storage.set(KEY, v); } catch (e) {}
+    try { localStorage.setItem(KEY, v); } catch (e) {}
+  },
+  async get() {
+    try { if (window.storage) { const r = await window.storage.get(KEY); if (r && r.value) return r.value; } } catch (e) {}
+    try { return localStorage.getItem(KEY); } catch (e) {}
+    return null;
+  }
+};
+
+let saveTimer = null;
+function save() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => store.set(JSON.stringify(state)), 250);
+}
+async function load() {
+  try {
+    const raw = await store.get();
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (s && s.marks) state = Object.assign(state, s);
+      [0, 1].forEach(t => { document.getElementById('n' + t).value = state.names[t]; });
+    }
+  } catch (e) {}
+  setTheme(state.theme || 'slab');
+  render();
+}
+load();
+
+/* keep the screen awake while the board is open */
+let lock = null;
+async function keepAwake() {
+  try { if ('wakeLock' in navigator) lock = await navigator.wakeLock.request('screen'); } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) keepAwake(); });
+keepAwake();
+</script>

@@ -1,0 +1,13 @@
+{
+  "name": "Tactics scoreboard",
+  "short_name": "Tactics",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0D11",
+  "theme_color": "#0B0D11",
+  "icons": [
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
