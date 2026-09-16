@@ -63,13 +63,23 @@
     padding: calc(10px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-right))
              calc(18px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left));
     min-height: 100vh;
+    min-height: 100dvh;
     transition: background .25s;
+    display: flex;
+    /* "safe" falls back to start-alignment when the board is taller than the
+       viewport (small phone, portrait) - plain "center" would push the top
+       of the board above y=0 with no way to scroll up to it. */
+    align-items: safe center;
+    justify-content: center;
   }
-  /* 400px keeps each marks column's rendered width close to the 116-unit
-     mark-drawing viewBox; wider than that and the SVG (which preserves its
-     aspect ratio) letterboxes, leaving a gap of blank space past the
-     outermost cross - most visible on a wide browser window. */
-  .wrap { max-width: 400px; margin: 0 auto; }
+  /* 400px is the design width: it keeps each marks column's rendered width
+     close to the 116-unit mark-drawing viewBox, so the SVG (which preserves
+     its aspect ratio) doesn't letterbox and leave a gap past the outermost
+     cross. On screens with room to spare (iPad, landscape phones), script.js
+     scales this whole box up with a CSS transform instead of raising this
+     cap directly - that keeps every internal proportion (including the
+     viewBox match above) exactly as designed at any size. */
+  .wrap { width: 100%; max-width: 400px; }
 
   .board {
     background: var(--board);
@@ -134,7 +144,7 @@
   /* rows */
   .row {
     display: grid;
-    grid-template-columns: var(--pts-w) 1fr var(--num-w) 1fr var(--pts-w);
+    grid-template-columns: var(--pts-w) minmax(0, 1fr) var(--num-w) minmax(0, 1fr) var(--pts-w);
     height: var(--row-h);
     border-bottom: 1px solid var(--line-soft);
   }
@@ -491,8 +501,42 @@ async function load() {
   } catch (e) {}
   setTheme(state.theme || 'light');
   render();
+  fitBoard();
 }
 load();
+
+/* on screens with room to spare (iPad, landscape phones), scale the whole
+   board up with a CSS transform so it fills more of the screen, instead of
+   staying pinned to its ~400px phone-sized design width. Everything inside
+   .wrap keeps its original pixel proportions - including the marks SVG's
+   match to its viewBox - so this only visually magnifies an already-correct
+   rendering, rather than re-deriving sizes at a new width. Never scales
+   above 1x on its own on a screen that's already tight (max-width alone
+   keeps phones exactly as they are; this only ever scales up). */
+const MAX_BOARD_SCALE = 3;
+function fitBoard() {
+  const wrap = document.querySelector('.wrap');
+  wrap.style.transform = 'none';
+  const rect = wrap.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const vv = window.visualViewport;
+  const availW = vv ? vv.width : window.innerWidth;
+  const availH = vv ? vv.height : window.innerHeight;
+  const cs = getComputedStyle(document.body);
+  const padW = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+  const padH = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+  const scale = Math.min((availW - padW) / rect.width, (availH - padH) / rect.height, MAX_BOARD_SCALE);
+  wrap.style.transform = scale > 1.02 ? `scale(${scale})` : 'none';
+}
+let fitTimer = null;
+function scheduleFit() {
+  clearTimeout(fitTimer);
+  fitTimer = setTimeout(fitBoard, 80);
+}
+window.addEventListener('resize', scheduleFit);
+window.addEventListener('orientationchange', scheduleFit);
+if (window.visualViewport) window.visualViewport.addEventListener('resize', scheduleFit);
+if (document.fonts) document.fonts.ready.then(scheduleFit);
 
 /* keep the screen awake while the board is open */
 let lock = null;
