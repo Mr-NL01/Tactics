@@ -65,7 +65,11 @@
     min-height: 100vh;
     transition: background .25s;
   }
-  .wrap { max-width: 460px; margin: 0 auto; }
+  /* 400px keeps each marks column's rendered width close to the 116-unit
+     mark-drawing viewBox; wider than that and the SVG (which preserves its
+     aspect ratio) letterboxes, leaving a gap of blank space past the
+     outermost cross - most visible on a wide browser window. */
+  .wrap { max-width: 400px; margin: 0 auto; }
 
   .board {
     background: var(--board);
@@ -169,13 +173,13 @@
   }
   .num b {
     font-family: "Archivo Black", Archivo, system-ui, sans-serif;
-    font-size: 22px;
+    font-size: 24px;
     line-height: 1;
     display: block;
     color: var(--print);
     transition: opacity .2s;
   }
-  .num.bull b { font-size: 13px; letter-spacing: .04em; }
+  .num.bull b { font-size: 14px; letter-spacing: .04em; }
 
   .pts {
     font-weight: 700;
