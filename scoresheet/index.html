@@ -19,24 +19,7 @@
     --pts-w: 44px;
   }
 
-  [data-theme="white"] {
-    --page: #E6E7E3;
-    --board: #FAFAF7;
-    --frame: transparent;
-    --frame-w: 0px;
-    --shadow: none;
-    --line: #14161A;
-    --line-soft: #C3C5C2;
-    --print: #14161A;
-    --numbox: #FFFFFF;
-    --ink-a: #17181E;
-    --ink-b: #1E3FB0;
-    --chrome: #4A4D52;
-    --chrome-dim: #8A8E92;
-    --btn: rgba(20,22,26,.07);
-    --btn-line: rgba(20,22,26,.18);
-  }
-  [data-theme="slab"] {
+  [data-theme="light"] {
     --page: #0B0D11;
     --board: #FAFAF7;
     --frame: #9DA4AB;
@@ -270,9 +253,8 @@
 
   <div class="bar">
     <div class="seg" role="group" aria-label="Board surface">
-      <button data-theme-btn="slab">Slab</button>
-      <button data-theme-btn="white">Whiteboard</button>
-      <button data-theme-btn="dark">Dark board</button>
+      <button data-theme-btn="light">Light</button>
+      <button data-theme-btn="dark">Dark</button>
     </div>
     <button class="wipe" id="wipe">Wipe board</button>
   </div>
@@ -294,7 +276,7 @@ const VALUE = n => (n === 'BULL' ? 25 : n);
 const KEY = 'tactics:scoresheet:v2';
 
 let state = {
-  theme: 'slab',
+  theme: 'light',
   names: ['Home', 'Away'],
   marks: {},
   pts: {}
@@ -503,7 +485,7 @@ async function load() {
       [0, 1].forEach(t => { document.getElementById('n' + t).value = state.names[t]; });
     }
   } catch (e) {}
-  setTheme(state.theme || 'slab');
+  setTheme(state.theme || 'light');
   render();
 }
 load();
