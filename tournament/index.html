@@ -624,9 +624,7 @@ function buildSchedule(players, boards, rounds){
 
 function startTournament(){
   const su = S.setup;
-  const names = su.names.map(v => v.trim());
-  const empty = names.findIndex(v => !v);
-  if(empty >= 0) return showErr(`Player ${empty+1} has no name yet. Fill every cell, or lower the number of players.`);
+  const names = su.names.map((v,i) => v.trim() || `Player ${i+1}`);
   const seen = new Map();
   for(const v of names){
     const k = v.toLowerCase();
